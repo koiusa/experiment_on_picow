@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"AVDTP",
+			"AVRCP",
+			"BNEP",
+			"btstack",
+			"DPICO",
+			"dylib",
+			"HIDS",
+			"multicore",
+			"picotool",
+			"picow",
+			"RFCOMM",
+			"RTTI",
+			"smod",
+			"stdlib",
+			"USERHOME",
+			"USERPROFILE"
+		]
+	}
+}
