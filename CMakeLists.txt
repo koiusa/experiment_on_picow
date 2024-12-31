@@ -40,14 +40,14 @@ pico_sdk_init()
 
 add_subdirectory(lib)
 
-# Add executable. Default name is the project name, version 0.1
+# Add executable. Default name is the project name
 
 add_executable(DualShock4_on_picow
   main.cpp
 )
 
 pico_set_program_name(DualShock4_on_picow "DualShock4_on_picow")
-pico_set_program_version(DualShock4_on_picow "0.1.0")
+pico_set_program_version(DualShock4_on_picow "0.2.0")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(DualShock4_on_picow 0)

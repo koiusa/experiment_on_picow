@@ -5,6 +5,10 @@
 		}
 	],
 	"settings": {
+		"doxdocgen.file.copyrightTag": [
+			"@copyright Copyright (c) {year} @Akari."
+		],
+		"doxdocgen.file.versionTag": "@version 0.2.0",
 		"cSpell.words": [
 			"AVDTP",
 			"AVRCP",
