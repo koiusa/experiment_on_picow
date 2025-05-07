@@ -69,3 +69,8 @@ target_link_libraries(DualShock4_on_picow
 )
 
 pico_add_extra_outputs(DualShock4_on_picow)
+
+# プロット用のソースファイルを追加
+include_directories(${CMAKE_SOURCE_DIR}/debug/plot)
+file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/plot/*.cpp)
+target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
