@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# My projects
+build
+.vscode/*.json
+__*
