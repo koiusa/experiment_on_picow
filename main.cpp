@@ -2,7 +2,7 @@
 #include "ds4_on_pico_w.hpp"
 #include "pico/stdlib.h"
 
-#include "serialplot.h"
+#include "dummyinput.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -17,11 +17,13 @@ int main()
     // SETUP
     ////////////////////////////////////////////
     stdio_init_all();
-    sleep_ms(5000);
+    sleep_ms(3000);
     printf("======================\n[SETUP] DS4 on PicoW\n======================\n");
     // controller.setup((DS4forPicoW::config){ .mac_address = "00:00:00:00:00:00" });
     controller.setup();
 
+    Dummyinput dummyinput;
+    
     while (1) {
         loop_contents = false;
         do {
@@ -45,11 +47,11 @@ int main()
             tight_loop_contents();
             state = controller.get_state();
             if (true == state.linked) {
-                
-                serialplot::flush(state); // Flush the state to serial port
-                serialplot::plot(state); // Plot a sinus
+                              
+                dummyinput.set_State(state); // Set the state to the dummy input
+                dummyinput.update(); // Update the dummy input
             }
-            sleep_ms(20);
+            sleep_ms(10);
         }
         printf("%s [Closing]\n", LOG_HEADER);
     }
