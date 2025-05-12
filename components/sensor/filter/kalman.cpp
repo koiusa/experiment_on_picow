@@ -100,7 +100,10 @@ void Kalman::calculate_orientation(const SensorState* state, EulerAngle* orienta
     orientation->y = kalman_update(&kalman_roll, smoothed_roll, state->gyro_y, delta_time);
     
     // ヨーをジャイロスコープから積分して計算
-    orientation->z += state->gyro_z * delta_time; // ジャイロのZ軸値を積分
+    // orientation->z += state->accel_z * delta_time; // ジャイロのZ軸値を積分
+    float* accel_corrected  = new float[3];
+    correct_gravity(state, accel_corrected, orientation); // 重力補正
+    orientation->z = atan2f(accel_corrected[1], accel_corrected[0]) * 180.0f / M_PI; // ヨーを計算
 };
 
 // 加速度から速度と位置を計算

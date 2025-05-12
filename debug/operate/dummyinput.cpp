@@ -2,6 +2,8 @@
 
 
 Dummyinput::Dummyinput() {
+    udp.set_wifi_config({ WIFI_SSID, WIFI_PASSWORD });
+    udp.set_udp_config({ UDP_TARGET, UDP_PORT });
     calibrater.init(); // Initialize the calibrater
     kalman.init(); // Initialize the Kalman filter
     kalman.begin(this->freq); // Initialize the Kalman filter with the default frequency
@@ -25,11 +27,12 @@ void Dummyinput::update() {
     set_rotate_order(); // Set the rotation order
     kalman_update(); // Update the Kalman filter
     madgwick_update(); // Update the Madgwick filter
+    raw_update(); // Update the raw data
     manual_update(); // Update the manual orientation
     save_previous_input(); // Save the previous state
 };
 
-void Dummyinput::set_State(const DualShock4_state state) {
+void Dummyinput::set_State(const DualShock4_state& state) {
     this->state = state;
 };
 
@@ -61,6 +64,11 @@ void Dummyinput::sensor_calibrate() {
     printf(">calibrate_Accel_x:%f|np\n", sensor_state.accel_x / accel_rate);
     printf(">calibrate_Accel_y:%f|np\n", sensor_state.accel_y / accel_rate);
     printf(">calibrate_Accel_z:%f|np\n", sensor_state.accel_z / accel_rate);
+
+    osc::bundle bundle{osc::time()};
+    bundle << (osc::message{ "/gx/gy/gz/" } << float(state.gyro_x / gyro_rate) << float(state.gyro_y / gyro_rate) << float(state.gyro_z / gyro_rate)) 
+    << (osc::message{ "/ax/ay/az" } << float(state.accel_x / accel_rate) << float(state.accel_y / accel_rate) << float(state.accel_z / accel_rate));
+    udp.apply_msg(bundle); // Add the message to the UDP queue
 };
 
 void Dummyinput::sensor_freaquency() {
@@ -142,6 +150,10 @@ void Dummyinput::kalman_update() {
     printf(">kalman_q_y:%f|np\n", qt.y);
     printf(">kalman_q_z:%f|np\n", qt.z);
     printf(">kalman_q_w:%f|np\n", qt.w);
+
+    osc::bundle vecter{osc::time()};
+    vecter << (osc::message{ "/kalman" } << float(pitch) << float(roll) << float(yaw));
+    udp.apply_msg(vecter);
 };
 
 /// @brief Dummyinput::madgwick_update
@@ -164,6 +176,26 @@ void Dummyinput::madgwick_update() {
     printf(">madgwick_q_y:%f|np\n", qt.y);
     printf(">madgwick_q_z:%f|np\n", qt.z);
     printf(">madgwick_q_w:%f|np\n", qt.w);
+    
+    osc::bundle vecter{osc::time()};
+    vecter << (osc::message{ "/madgwick" } << float(pitch) << float(roll) << float(yaw));
+    udp.apply_msg(vecter);
+};
+
+void Dummyinput::raw_update() {
+    Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
+    float timeStep = 1.0f / this->freq; // Calculate the time step
+    yrp.x += sensor_state.gyro_x / gyro_rate * timeStep; // Update the pitch
+    yrp.y += sensor_state.gyro_y / gyro_rate * timeStep;
+    yrp.z += sensor_state.gyro_z / gyro_rate * timeStep;
+    yrp.order = manual.order; // Set the rotation order
+    Quaternion qt = Quaternion::toQuaternion(yrp.toRadians());
+    printf(">3D|raw:S:cube:P:0:0:0:Q:%f:%f:%f:%f:W:8:H:3:D:1:C:red\n", qt.x, qt.y, qt.z,qt.w);
+    printf(">3D|raw_euler:S:cube:P:0:0:0:R:%f:%f:%f:W:8:H:3:D:1:C:red|np\n", yrp.x, yrp.y, yrp.z);
+
+    osc::bundle vecter{osc::time()};
+    vecter << (osc::message{ "/raw" } << float(yrp.x) << float(yrp.y) << float(yrp.z));
+    udp.apply_msg(vecter);
 };
 
 /// @brief Dummyinput::manual_update
@@ -192,15 +224,9 @@ void Dummyinput::manual_update() {
     printf(">manual_q_z:%f|np\n", qt.z);
     printf(">manual_q_w:%f|np\n", qt.w);
 
-    Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
-    float timeStep = 1.0f / this->freq; // Calculate the time step
-    yrp.x += sensor_state.gyro_x / gyro_rate * timeStep; // Update the pitch
-    yrp.y += sensor_state.gyro_y / gyro_rate * timeStep;
-    yrp.z += sensor_state.gyro_z / gyro_rate * timeStep;
-    yrp.order = manual.order; // Set the rotation order
-    Quaternion yrp_qt = Quaternion::toQuaternion(yrp.toRadians());
-    printf(">3D|raw:S:cube:P:0:0:0:Q:%f:%f:%f:%f:W:8:H:3:D:1:C:red\n", yrp_qt.x, yrp_qt.y, yrp_qt.z, yrp_qt.w);
-    printf(">3D|raw_euler:S:cube:P:0:0:0:R:%f:%f:%f:W:8:H:3:D:1:C:red|np\n", yrp.x, yrp.y, yrp.z);
+    osc::bundle vecter{osc::time()};
+    vecter << (osc::message{ "/manual" } << float(this->manual.x) << float(this->manual.y) << float(this->manual.z));
+    udp.apply_msg(vecter);
 };
 
 void Dummyinput::set_rotate_order() {

@@ -21,7 +21,7 @@ int main()
     printf("======================\n[SETUP] DS4 on PicoW\n======================\n");
     // controller.setup((DS4forPicoW::config){ .mac_address = "00:00:00:00:00:00" });
     controller.setup();
-
+    
     Dummyinput dummyinput;
     
     while (1) {
@@ -45,9 +45,10 @@ int main()
         printf("%s [LOOP]\n", LOG_HEADER);
         while (loop_contents) {
             tight_loop_contents();
+            dummyinput.wifi_connect(); // Try to connect to Wi-Fi
             state = controller.get_state();
+
             if (true == state.linked) {
-                              
                 dummyinput.set_State(state); // Set the state to the dummy input
                 dummyinput.update(); // Update the dummy input
             }

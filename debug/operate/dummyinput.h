@@ -8,6 +8,7 @@
 #include "serialplot.h"
 #include "ds4_on_pico_w.hpp"
 #include "BMI055.h"
+#include "picow_udp.h"
 #include <chrono>
 #include <algorithm>
 
@@ -39,6 +40,7 @@ class Dummyinput {
 
     private:
         DualShock4_state state = {0};
+        PicowUDP udp; // UDP通信のインスタンス
         Calibrater calibrater;
         float gyro_rate; // Get the gyro resolution
         float accel_rate; // Get the accel resolution
@@ -63,11 +65,15 @@ class Dummyinput {
         ~Dummyinput();
 
         void update();
-        void set_State(const DualShock4_state state);
+        void set_State(const DualShock4_state& state);
+        PicowUDP get_udp(){ return udp;};
         void reset();
+        void wifi_connect() { udp.try_wifi_connect(); } // Wi-Fi接続を試みる;
     private:
         void kalman_update();
         void madgwick_update();
+        void raw_update();
+        void plot_update();
         void manual_update();
         void sensor_calibrate();
         void sensor_rezolution();

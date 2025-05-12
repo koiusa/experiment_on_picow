@@ -853,16 +853,16 @@ void func_bt_hid_main()
         func_bt_hid_disconnected(remote_addr);
     }
     hci_power_control(HCI_POWER_ON);
-    btstack_run_loop_execute();
-    hci_power_control(HCI_POWER_OFF);
+    // btstack_run_loop_execute();
+    // hci_power_control(HCI_POWER_OFF);
 
-    if (true == g_flag_blink_led) {
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
-        btstack_run_loop_remove_timer(&blink_timer);
-    }
+    // if (true == g_flag_blink_led) {
+    //     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
+    //     btstack_run_loop_remove_timer(&blink_timer);
+    // }
 
-    sdp_deinit();
-    sm_deinit();
+    // sdp_deinit();
+    // sm_deinit();
 }
 void func_bt_closing()
 {
