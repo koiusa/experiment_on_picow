@@ -3,6 +3,7 @@
 #include "pico/stdlib.h"
 
 #include "dummyinput.h"
+#include "sg90.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -11,6 +12,9 @@
 
 int main()
 {
+    sg90 servo;
+    servo.setup(DF_PWMSIG);
+  
     DS4forPicoW controller;
     bool loop_contents = true;
     ////////////////////////////////////////////
@@ -23,6 +27,7 @@ int main()
     controller.setup();
     
     Dummyinput dummyinput;
+
     
     while (1) {
         loop_contents = false;
@@ -51,6 +56,18 @@ int main()
             if (true == state.linked) {
                 dummyinput.set_State(state); // Set the state to the dummy input
                 dummyinput.update(); // Update the dummy input
+                
+                float pad = servo.remap(state.r3_y, 1.0f, 255.0f, 0.0f, 90.0f); // Map the right stick Y-axis to the servo angle
+                servo.current_angle_ = std::clamp(state.r3_y * 1.0f, 0.0f, 90.0f); // Reduce the sensitivity of the left stick
+                servo.drive_to_angle(servo.current_angle_);
+                if (servo.current_angle_ != 0.0f) {
+                    servo.apply_angle(true);
+                }else {
+                    servo.apply_angle(false);
+                }
+                printf("%s [R3] %f\n", LOG_HEADER, servo.current_angle_);
+                
+
             }
             sleep_ms(10);
         }

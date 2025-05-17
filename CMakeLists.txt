@@ -101,7 +101,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${IMU_SOURCES})
 # サーボ用のソースファイルを追加
 target_link_libraries(${PROJECT_NAME} pico_stdlib hardware_pwm)
 include_directories(${CMAKE_SOURCE_DIR}/components/servo/sg90)
-file(GLOB SERVO_SOURCES ${CMAKE_SOURCE_DIR}/omponents/servo/sg90/*.cpp)
+file(GLOB SERVO_SOURCES ${CMAKE_SOURCE_DIR}/components/servo/sg90/*.cpp)
 target_sources(${PROJECT_NAME} PRIVATE ${SERVO_SOURCES})
 
 # UDP通信用のソースファイルを追加
