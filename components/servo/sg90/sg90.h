@@ -1,8 +1,12 @@
+#ifndef SG90_H
+#define SG90_H
+
 #include <stdio.h>
 #include <algorithm>
 #include "pico/stdlib.h"
 #include "hardware/structs/pwm.h"
 #include "hardware/pwm.h"
+#include "logic.h"
 
 //-------------------------------------------------------------------------
 //define
@@ -19,14 +23,12 @@ class sg90{
         sg90() = default;
         ~sg90() = default;
         void setup(uint8_t port);
-        uint begin(void);
-        uint servomotor_sg90_init(uint8_t port);
         void change_cycle_time(uint16_t period_cycle);
         void drive_to_angle(float angle);
-        float current_angle_ = 0.0f;
         void apply_angle(bool active);
-        
-        static float remap(float value, float istart, float istop, float ostart, float ostop) { return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));}
+        float get_current_angle() { return current_goal_angle_; }
+        void reset() { is_pwm_init = false; }
+        float current_goal_angle_ = 0.0f;
     private:
         pwm_config cfg;
         uint8_t port_ = 0;
@@ -36,7 +38,8 @@ class sg90{
         void set_chan_level(uint16_t count);
         bool set_pwm_init(uint port_num);
         float angle_to_hightime(float angle);
-        static uint16_t set_pwm_duty(uint16_t period_cycle,float cycletime,float hightime);
+        uint16_t set_pwm_duty(uint16_t period_cycle,float cycletime,float hightime);
 
 };
             
+#endif // SG90_H

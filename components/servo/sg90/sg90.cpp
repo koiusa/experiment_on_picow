@@ -2,11 +2,19 @@
 
 void sg90::setup(uint8_t port) {
     if (is_pwm_init) {
-        printf("PWM is already initialized.\n");
+        printf("Error: PWM is already initialized\n");
         return;
     }
     // Set the PWM frequency to 50Hz
     set_pwm_init(port);
+
+    drive_to_angle(0.0f);
+    // Set the PWM running
+    pwm_set_enabled(slice_, true);
+    //wait 1[s]
+    busy_wait_ms(1000);
+    // Set the PWM stop
+    pwm_set_enabled(slice_, false);
 }
 
 void sg90::change_cycle_time(uint16_t period_cycle) {
@@ -16,11 +24,12 @@ void sg90::change_cycle_time(uint16_t period_cycle) {
 }
 
 float sg90::angle_to_hightime(float angle) {
-    return remap(angle, -90.0f, 90.0f, DF_MOT_DUTY_N90_DEG, DF_MOT_DUTY_P90_DEG);
+    return logic::remap(angle, -90.0f, 90.0f, DF_MOT_DUTY_N90_DEG, DF_MOT_DUTY_P90_DEG);
 }
 
 void sg90::drive_to_angle(float angle) {
     // Set the duty cycle based on the angle
+    current_goal_angle_ = angle;
     float hightime = angle_to_hightime(angle);
     uint16_t count = set_pwm_duty(DF_MOT_PERIOD_CYCLE, DF_MOT_CYCLE_TIME, hightime);
     set_chan_level(count);
@@ -29,24 +38,6 @@ void sg90::drive_to_angle(float angle) {
 void sg90::apply_angle(bool active) {
     pwm_set_enabled(slice_, active);
 }
-
-//-------------------------------------------------------------------------
-//function     : main
-//return       : ---
-//-------------------------------------------------------------------------
-uint sg90::begin() {
-
-    //set pwm duty(-70[deg])
-    drive_to_angle(90.0f);
-    // Set the PWM running
-    pwm_set_enabled(slice_, true);
-    //wait
-    busy_wait_ms(180);
-    // Set the PWM stop
-    pwm_set_enabled(slice_, false);
-
-    return(slice_);
-};
 
 //-------------------------------------------------------------------------
 //function: pwm free count(50Hz cycle)setting
@@ -75,13 +66,6 @@ bool sg90::set_pwm_init(uint port_num)
     pwm_config_set_clkdiv_int(&cfg,100);
     pwm_init(slice_,&cfg,false);
 
-    drive_to_angle(0.0f);
-    // Set the PWM running
-    pwm_set_enabled(slice_, true);
-    //wait 1[s]
-    busy_wait_ms(1000);
-    // Set the PWM stop
-    pwm_set_enabled(slice_, false);
     is_pwm_init = true;
 
     return(true);

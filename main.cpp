@@ -2,8 +2,8 @@
 #include "ds4_on_pico_w.hpp"
 #include "pico/stdlib.h"
 
-#include "dummyinput.h"
-#include "sg90.h"
+#include "ds4_imu_tester.h"
+#include "servo_drive_tester.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -12,9 +12,6 @@
 
 int main()
 {
-    sg90 servo;
-    servo.setup(DF_PWMSIG);
-  
     DS4forPicoW controller;
     bool loop_contents = true;
     ////////////////////////////////////////////
@@ -26,7 +23,8 @@ int main()
     // controller.setup((DS4forPicoW::config){ .mac_address = "00:00:00:00:00:00" });
     controller.setup();
     
-    Dummyinput dummyinput;
+    DS4ImuTester ds4_imu_tester;
+    ServoDriveTester servo_drive_tester;  
 
     
     while (1) {
@@ -50,24 +48,14 @@ int main()
         printf("%s [LOOP]\n", LOG_HEADER);
         while (loop_contents) {
             tight_loop_contents();
-            dummyinput.wifi_connect(); // Try to connect to Wi-Fi
+            ds4_imu_tester.wifi_connect(); // Try to connect to Wi-Fi
             state = controller.get_state();
 
             if (true == state.linked) {
-                dummyinput.set_State(state); // Set the state to the dummy input
-                dummyinput.update(); // Update the dummy input
-                
-                float pad = servo.remap(state.r3_y, 1.0f, 255.0f, 0.0f, 90.0f); // Map the right stick Y-axis to the servo angle
-                servo.current_angle_ = std::clamp(state.r3_y * 1.0f, 0.0f, 90.0f); // Reduce the sensitivity of the left stick
-                servo.drive_to_angle(servo.current_angle_);
-                if (servo.current_angle_ != 0.0f) {
-                    servo.apply_angle(true);
-                }else {
-                    servo.apply_angle(false);
-                }
-                printf("%s [R3] %f\n", LOG_HEADER, servo.current_angle_);
-                
-
+                ds4_imu_tester.set_State(state); // Set the state to the dummy input
+                ds4_imu_tester.update(); // Update the dummy input
+                servo_drive_tester.set_State(state); // Set the state to the servo drive tester
+                servo_drive_tester.update(); // Update the servo drive tester
             }
             sleep_ms(10);
         }

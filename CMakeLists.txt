@@ -70,41 +70,6 @@ target_link_libraries(DualShock4_on_picow
 
 pico_add_extra_outputs(DualShock4_on_picow)
 
-# プロット用のソースファイルを追加
-include_directories(${CMAKE_SOURCE_DIR}/debug/plot)
-file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/plot/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
-
-# 入力テスト用のソースファイルを追加
-include_directories(${CMAKE_SOURCE_DIR}/debug/operate)
-file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/operate/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
-
-# 行列計算用のソースファイルを追加
-include_directories(${CMAKE_SOURCE_DIR}/components/math/matrix) 
-file(GLOB MATRIX_SOURCES ${CMAKE_SOURCE_DIR}/components/math/matrix/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${MATRIX_SOURCES})
-
-include_directories(${CMAKE_SOURCE_DIR}/components/math/eigen) 
-file(GLOB EIGEN_SOURCES ${CMAKE_SOURCE_DIR}/components/math/eigen/Eigen/src/*/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${EIGEN_SOURCES})
-
-# センサー用のソースファイルを追加
-include_directories(${CMAKE_SOURCE_DIR}/components/sensor/filter)
-file(GLOB SENSOR_SOURCES ${CMAKE_SOURCE_DIR}/components/sensor/filter/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${SENSOR_SOURCES})
-
-include_directories(${CMAKE_SOURCE_DIR}/components/sensor/imu)
-file(GLOB IMU_SOURCES ${CMAKE_SOURCE_DIR}/components/sensor/imu/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${IMU_SOURCES})
-
-# サーボ用のソースファイルを追加
-target_link_libraries(${PROJECT_NAME} pico_stdlib hardware_pwm)
-include_directories(${CMAKE_SOURCE_DIR}/components/servo/sg90)
-file(GLOB SERVO_SOURCES ${CMAKE_SOURCE_DIR}/components/servo/sg90/*.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ${SERVO_SOURCES})
-
-# UDP通信用のソースファイルを追加
 # .envファイルを読み込む
 file(READ "${CMAKE_SOURCE_DIR}/.env" ENV_CONTENTS)
 string(REGEX MATCH "WIFI_SSID=([^\n\r]*)" _ ${ENV_CONTENTS})
@@ -115,16 +80,25 @@ string(REGEX MATCH "UDP_TARGET=([^\n\r]*)" _ ${ENV_CONTENTS})
 set(UDP_TARGET "${CMAKE_MATCH_1}")
 string(REGEX MATCH "UDP_PORT=([^\n\r]*)" _ ${ENV_CONTENTS})
 set(UDP_PORT "${CMAKE_MATCH_1}")
+
 target_compile_definitions(DualShock4_on_picow PRIVATE
     WIFI_SSID=${WIFI_SSID}
     WIFI_PASSWORD=${WIFI_PASSWORD}
     UDP_TARGET=${UDP_TARGET}
     UDP_PORT=${UDP_PORT}
 )
-add_subdirectory(components/networking/UDP)
+
+add_subdirectory(components)
 target_link_libraries(DualShock4_on_picow
-    lib_picow_udp
+    components_on_picow
 )
-target_include_directories(DualShock4_on_picow PRIVATE
-    ${CMAKE_SOURCE_DIR}/components/networking/UDP
-)
+
+# プロット用のソースファイルを追加
+include_directories(${CMAKE_SOURCE_DIR}/debug/plot)
+file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/plot/*.cpp)
+target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
+
+# 入力テスト用のソースファイルを追加
+include_directories(${CMAKE_SOURCE_DIR}/debug/operate)
+file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/operate/*.cpp)
+target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})

@@ -9,10 +9,11 @@
 #include "ds4_on_pico_w.hpp"
 #include "BMI055.h"
 #include "picow_udp.h"
+#include "logic.h"
 #include <chrono>
 #include <algorithm>
 
-class Dummyinput {
+class DS4ImuTester {
     // デバウンス処理のためのクラス
     // ボタンの状態を保存し、一定時間が経過した後に有効な状態かどうかを判断する
     class debounce {
@@ -61,8 +62,8 @@ class Dummyinput {
 
         EulerAngle yrp = {0, 0, 0, EulerOrder::ZYX }; // Yaw, Roll, Pitch
     public:
-        Dummyinput();
-        ~Dummyinput();
+        DS4ImuTester();
+        ~DS4ImuTester();
 
         void update();
         void set_State(const DualShock4_state& state);

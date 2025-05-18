@@ -1,7 +1,7 @@
-#include "dummyinput.h"
+#include "ds4_imu_tester.h"
 
 
-Dummyinput::Dummyinput() {
+DS4ImuTester::DS4ImuTester() {
     udp.set_wifi_config({ WIFI_SSID, WIFI_PASSWORD });
     udp.set_udp_config({ UDP_TARGET, UDP_PORT });
     calibrater.init(); // Initialize the calibrater
@@ -12,12 +12,12 @@ Dummyinput::Dummyinput() {
     imu_sensor.gyro_rate_type = BMI055::GYRO_RATE::RS125; // ジャイロセンサーの分解能を設定
 };
 
-Dummyinput::~Dummyinput() {
+DS4ImuTester::~DS4ImuTester() {
     // Destructor
     // Cleanup if necessary
 };
 
-void Dummyinput::update() {
+void DS4ImuTester::update() {
     reset(); // Reset the state if necessary 
     serialplot::flush(state); // Flush the state to serial port
     serialplot::plot(state); // Plot a sinus 
@@ -32,11 +32,11 @@ void Dummyinput::update() {
     save_previous_input(); // Save the previous state
 };
 
-void Dummyinput::set_State(const DualShock4_state& state) {
+void DS4ImuTester::set_State(const DualShock4_state& state) {
     this->state = state;
 };
 
-void Dummyinput::reset() {
+void DS4ImuTester::reset() {
     if (state.options != 0) {
         // If the options button is pressed, reset the Kalman filter
         calibrater.init();
@@ -47,14 +47,14 @@ void Dummyinput::reset() {
     }
 };
 
-void Dummyinput::save_previous_input() {
+void DS4ImuTester::save_previous_input() {
     // Save the previous state
     debounce_order.saveState(state.r3 != 0); // Save the state of the right stick button
     debounce_rezolusion.saveState(state.hat == 0 || state.hat == 4); // Save the state of the circle button
     debounce_rate_target.saveState(state.hat == 2 || state.hat == 6); // Save the state of the hat switch
 };
 
-void Dummyinput::sensor_calibrate() {
+void DS4ImuTester::sensor_calibrate() {
     calibrater.update(state.gyro_x, state.gyro_y, state.gyro_z, state.accel_x, state.accel_y, state.accel_z);
     calibrater.calibrate(); // Calibrate the sensor
     Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
@@ -71,7 +71,7 @@ void Dummyinput::sensor_calibrate() {
     udp.apply_msg(bundle); // Add the message to the UDP queue
 };
 
-void Dummyinput::sensor_freaquency() {
+void DS4ImuTester::sensor_freaquency() {
     if (state.circle != 0 && (state.l2_value != 0 || state.r2_value != 0)) {
         // If the circle button is pressed, add the frequency to the Kalman filter
         add_frequency((-state.l2_value + state.r2_value)/100.0f);
@@ -81,14 +81,14 @@ void Dummyinput::sensor_freaquency() {
     printf(">operate_filter_freq:%f|np\n", this->freq);
 };
 
-void Dummyinput::add_frequency(float freq) {
+void DS4ImuTester::add_frequency(float freq) {
     this->freq += freq;
     this->freq = std::clamp(this->freq, 1.0f, 200.0f); // サンプリング周波数の範囲を制限
 };
 
 /// @brief Dummyinput::sensor_target
 /// @details センサーのターゲットを設定します。
-void Dummyinput::sensor_rezolution() {
+void DS4ImuTester::sensor_rezolution() {
     {
         // Set the target sensor based on the current state
         if (debounce_rate_target.isValid((state.hat == 2 || state.hat == 6) && state.circle != 0)) { // 現在の状態が前回の状態と異なる場合
@@ -132,7 +132,7 @@ void Dummyinput::sensor_rezolution() {
 
 /// @brief Dummyinput::kalman_update
 /// @details Kalmanフィルタを使用して、センサーの状態を更新します。
-void Dummyinput::kalman_update() {
+void DS4ImuTester::kalman_update() {
     Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
     kalman.update(sensor_state.gyro_x / gyro_rate, sensor_state.gyro_y / gyro_rate, sensor_state.gyro_z / gyro_rate,
                     sensor_state.accel_x / accel_rate, sensor_state.accel_y / accel_rate, sensor_state.accel_z / accel_rate); // Calculate the orientation
@@ -158,7 +158,7 @@ void Dummyinput::kalman_update() {
 
 /// @brief Dummyinput::madgwick_update
 /// @details Madgwickフィルタを使用して、センサーの状態を更新します。
-void Dummyinput::madgwick_update() {
+void DS4ImuTester::madgwick_update() {
     Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
     madgwick.updateIMU(sensor_state.gyro_x / gyro_rate, sensor_state.gyro_y / gyro_rate, sensor_state.gyro_z / gyro_rate,
                     sensor_state.accel_x / accel_rate, sensor_state.accel_y / accel_rate, sensor_state.accel_z / accel_rate); // Update the Madgwick filter
@@ -182,7 +182,7 @@ void Dummyinput::madgwick_update() {
     udp.apply_msg(vecter);
 };
 
-void Dummyinput::raw_update() {
+void DS4ImuTester::raw_update() {
     Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
     float timeStep = 1.0f / this->freq; // Calculate the time step
     yrp.x += sensor_state.gyro_x / gyro_rate * timeStep; // Update the pitch
@@ -200,12 +200,13 @@ void Dummyinput::raw_update() {
 
 /// @brief Dummyinput::manual_update
 /// @details 手動でオリエンテーションを更新します。
-void Dummyinput::manual_update() {
+void DS4ImuTester::manual_update() {
     float magnification = 10.0f; // Magnification factor
-    float pad_x = ((state.l3_x / 255.0f) - 0.5f) * magnification; // Normalize the values
-    float pad_y = ((state.l3_y / 255.0f) - 0.5f) * magnification; // Normalize the values
-    float trigger_l = (state.l2_value / 255.0f) * magnification; // Normalize the values
-    float trigger_r = (state.r2_value / 255.0f) * magnification; // Normalize the values
+
+    float pad_x = logic::remap(state.l3_x, 0, 255, -1, 1) * magnification; // Normalize the values
+    float pad_y = logic::remap(state.l3_y, 0, 255, -1, 1) * magnification; // Normalize the values
+    float trigger_l = logic::remap(state.l2_value, 0, 255, 0, 1) * magnification; // Normalize the values
+    float trigger_r = logic::remap(state.r2_value, 0, 255, 0, 1) * magnification; // Normalize the values
     float trigger = (-trigger_l + trigger_r) / 2; // Average the trigger values
     if (pad_x != 0 || pad_y != 0 || trigger != 0) {
         EulerAngle operate = {pad_x, pad_y, trigger, manual.order}; // Create an Euler angle object
@@ -229,7 +230,7 @@ void Dummyinput::manual_update() {
     udp.apply_msg(vecter);
 };
 
-void Dummyinput::set_rotate_order() {
+void DS4ImuTester::set_rotate_order() {
     if (debounce_order.isValid(state.r3 != 0)) { // Check if the right stick button is pressed
         if (debounce_order.isNotBounce()) { // 200msのデバウンス
             manual.order = static_cast<EulerOrder>((static_cast<int>(manual.order) + 1) % 6); // Change the rotation order

@@ -62,7 +62,7 @@ add_library(lib_osc STATIC
     src/value.cpp
 )
 
-target_include_directories(lib_osc PRIVATE
+target_include_directories(lib_osc PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/src/osc++
 )
