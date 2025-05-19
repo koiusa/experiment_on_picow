@@ -77,6 +77,7 @@ void PicowUDP::try_wifi_connect() {
             printf("Attempting to connect... %d\n", try_wifi_connect_count);
             wifi_connect();
             init_udp();
+            bind_receive_udp();
         }
     }
     
@@ -112,6 +113,25 @@ void PicowUDP::wifi_connect() {
         printf("Connected.\n");
     }
 };
+
+void PicowUDP::RcvFromUDP (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port) {
+	printf ("Rcv Begin\n");
+    char ip[32];
+	ip4addr_ntoa_r (addr, ip, sizeof(ip));
+	if (p->tot_len == p->len) {
+		// single fragment
+		printf ("Rcv from %s:%d, len %d\n", ip, port, p->tot_len);
+	} else {
+		printf ("Rcv from %s:%d, total %d [", ip, port, p->tot_len);
+		for (struct pbuf *q = p; q != NULL; q = q->next) {	// we need to go over all fragments (it'll be more than one if size > MTU)
+			printf("%d", q->len);
+			//printf (" (%s)", (char*) p->payload);
+			if (q->next) printf(" ");
+		}
+		printf("]\n");
+	}
+	pbuf_free(p);	// this is needed or we'll stop receiving packets after a while!
+}
 
 void PicowUDP::prototype() {
     stdio_init_all();

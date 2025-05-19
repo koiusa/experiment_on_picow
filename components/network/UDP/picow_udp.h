@@ -23,6 +23,7 @@
 #define TRY_WIFI_CONNECT_MAX 2
 #define WIFI_CONNECT_TIMEOUT_MS 30000
 
+#define OWN_PORT 49153
 class PicowUDP {
     // Initialization of counter moved to the constructor
     public:
@@ -45,7 +46,14 @@ class PicowUDP {
                 memset(&addr, 0, sizeof(addr));
                 memset(&pcb, 0, sizeof(pcb));
         }
-        ~PicowUDP() = default;
+        ~PicowUDP(){
+            if (pcb) {
+                udp_remove(pcb);
+            }
+            if (spcb) {
+                udp_remove(spcb);
+            }
+        }
         void prototype(); 
         int init_arch();
         void init_udp();
@@ -66,7 +74,13 @@ class PicowUDP {
             msg_queue.push(msg.to_packet());
             send_udp();
         }
+        void bind_receive_udp() {
+            	spcb = udp_new();
+	            err_t err = udp_bind(spcb, IP_ADDR_ANY, OWN_PORT);
+	            udp_recv (spcb, RcvFromUDP, NULL);
+        }
     private:
+        static void RcvFromUDP (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
         std::queue<osc::packet> msg_queue;
         wifi_config wifi_config_;
         udp_config udp_config_;
@@ -76,6 +90,7 @@ class PicowUDP {
         bool is_connected;
         int counter;
         struct udp_pcb* pcb;
+        struct udp_pcb* spcb;
         ip_addr_t addr;
         void wifi_connect();
         void send_udp();
