@@ -1,10 +1,6 @@
 #include "sg90.h"
 
 void sg90::setup(uint8_t port) {
-    if (is_pwm_init) {
-        printf("Error: PWM is already initialized\n");
-        return;
-    }
     // Set the PWM frequency to 50Hz
     set_pwm_init(port);
 
@@ -12,7 +8,7 @@ void sg90::setup(uint8_t port) {
     // Set the PWM running
     pwm_set_enabled(slice_, true);
     //wait 1[s]
-    busy_wait_ms(1000);
+    busy_wait_ms(500);
     // Set the PWM stop
     pwm_set_enabled(slice_, false);
 }
@@ -52,6 +48,8 @@ bool sg90::set_pwm_init(uint port_num)
         return(false);
     }
 
+    port_ = port_num;
+
     // Tell GPIO port number this is allocated to the PWM
     gpio_set_function(port_num,GPIO_FUNC_PWM);
 
@@ -65,8 +63,6 @@ bool sg90::set_pwm_init(uint port_num)
     pwm_config_set_clkdiv_mode(&cfg,PWM_DIV_FREE_RUNNING);
     pwm_config_set_clkdiv_int(&cfg,100);
     pwm_init(slice_,&cfg,false);
-
-    is_pwm_init = true;
 
     return(true);
 

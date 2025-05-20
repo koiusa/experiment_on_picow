@@ -11,7 +11,6 @@
 //-------------------------------------------------------------------------
 //define
 //-------------------------------------------------------------------------
-#define DF_PWMSIG   2
 //servo motor SG90 setting
 #define DF_MOT_PERIOD_CYCLE     25000   //value of period cycles
 #define DF_MOT_CYCLE_TIME      20.00F   //time of one cycle[ms]
@@ -27,7 +26,6 @@ class sg90{
         void drive_to_angle(float angle);
         void apply_angle(bool active);
         float get_current_angle() { return current_goal_angle_; }
-        void reset() { is_pwm_init = false; }
         float current_goal_angle_ = 0.0f;
     private:
         pwm_config cfg;

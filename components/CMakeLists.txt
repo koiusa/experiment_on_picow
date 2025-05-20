@@ -40,3 +40,9 @@ add_subdirectory(servo/sg90)
 target_link_libraries(components_on_picow
     lib_sg90
 )
+
+# 入力補助用のライブラリを追加
+add_subdirectory(operate)
+target_link_libraries(components_on_picow
+    lib_operate
+)
