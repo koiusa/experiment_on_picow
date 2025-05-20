@@ -7,8 +7,9 @@
 #include "ds4_on_pico_w.hpp"
 #include "sg90.h"
 #include "picow_udp.h"
+#include "Ids4state.h"
 
-class ServoDriveTester : public PicowUDP::IUdpListener
+class ServoDriveTester : public PicowUDP::IUdpListener, public IDs4state
 {
     public:
         ServoDriveTester() {
@@ -16,13 +17,12 @@ class ServoDriveTester : public PicowUDP::IUdpListener
         }
         ~ServoDriveTester() = default;
 
-        void set_State(const DualShock4_state& state) { this->state = state; };
         void update();
         void attach(PicowUDP* udp) override { this->udp = udp; };
+        void attach(const DualShock4_state* state) override { this->state = state; };
     private:
-        DualShock4_state state = {0};
         sg90 servo; 
-        void begin() { if (state.triangle != 0) { servo.reset(); servo.setup(DF_PWMSIG);} }
+        void begin() { if (state->triangle != 0) { servo.reset(); servo.setup(DF_PWMSIG);} }
 };
 
 #endif // SERVO_DRIVE_TESTER_H

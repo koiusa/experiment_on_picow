@@ -102,3 +102,6 @@ target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
 include_directories(${CMAKE_SOURCE_DIR}/debug/operate)
 file(GLOB PLOT_SOURCES ${CMAKE_SOURCE_DIR}/debug/operate/*.cpp)
 target_sources(${PROJECT_NAME} PRIVATE ${PLOT_SOURCES})
+
+# インターフェース用のソースファイルを追加
+include_directories(${CMAKE_SOURCE_DIR}/lib/interface)

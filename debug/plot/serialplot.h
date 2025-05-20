@@ -6,6 +6,6 @@ class serialplot{
     public:
         serialplot();
         ~serialplot();
-        static void plot(const DualShock4_state state);
-        static void flush(const DualShock4_state state);
+        static void plot(const DualShock4_state* state);
+        static void flush(const DualShock4_state* state);
 };

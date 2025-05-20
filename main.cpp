@@ -30,6 +30,7 @@ int main()
     udp.set_udp_config({ UDP_TARGET, UDP_PORT });
     ds4_imu_tester.attach(&udp);
     servo_drive_tester.attach(&udp);
+
     
     while (1) {
         loop_contents = false;
@@ -54,11 +55,11 @@ int main()
             tight_loop_contents();
             udp.try_wifi_connect(); // Try to connect to Wi-Fi
             state = controller.get_state();
+            ds4_imu_tester.attach(&state);
+            servo_drive_tester.attach(&state);
 
             if (true == state.linked) {
-                ds4_imu_tester.set_State(state); // Set the state to the dummy input
                 ds4_imu_tester.update(); // Update the dummy input
-                servo_drive_tester.set_State(state); // Set the state to the servo drive tester
                 servo_drive_tester.update(); // Update the servo drive tester
             }
             sleep_ms(10);

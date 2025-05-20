@@ -32,7 +32,7 @@ class PicowUDP {
             public:
                 virtual void attach(PicowUDP* udp) = 0;
             protected:
-                PicowUDP* udp = 0;
+                PicowUDP* udp = {0};
         };
         struct wifi_config {
             const char* ssid;

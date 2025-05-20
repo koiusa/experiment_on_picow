@@ -14,8 +14,9 @@
 #include <algorithm>
 
 #include "picow_udp.h"
+#include "Ids4state.h"
 
-class DS4ImuTester : public PicowUDP::IUdpListener {
+class DS4ImuTester : public PicowUDP::IUdpListener, public IDs4state {
     // デバウンス処理のためのクラス
     // ボタンの状態を保存し、一定時間が経過した後に有効な状態かどうかを判断する
     class debounce {
@@ -42,7 +43,6 @@ class DS4ImuTester : public PicowUDP::IUdpListener {
     };
 
     private:
-        DualShock4_state state = {0};
         Calibrater calibrater;
         float gyro_rate; // Get the gyro resolution
         float accel_rate; // Get the accel resolution
@@ -62,14 +62,15 @@ class DS4ImuTester : public PicowUDP::IUdpListener {
         float freq = 100.0f; // フィルタのsampling周波数
 
         EulerAngle yrp = {0, 0, 0, EulerOrder::ZYX }; // Yaw, Roll, Pitch
+
     public:
         DS4ImuTester();
         ~DS4ImuTester();
 
         void update();
-        void set_State(const DualShock4_state& state);
         void reset();
         void attach(PicowUDP* udp) override { this->udp = udp; };
+        void attach(const DualShock4_state* state) override { this->state = state; };
     private:
         void kalman_update();
         void madgwick_update();

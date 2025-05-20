@@ -30,30 +30,27 @@ void DS4ImuTester::update() {
     save_previous_input(); // Save the previous state
 };
 
-void DS4ImuTester::set_State(const DualShock4_state& state) {
-    this->state = state;
-};
 
 void DS4ImuTester::reset() {
-    if (state.options != 0) {
+    if (state->options != 0) {
         // If the options button is pressed, reset the Kalman filter
         calibrater.init();
         kalman.init(); // Initialize the Kalman filter
     }
-    if (state.l3 != 0) {
+    if (state->l3 != 0) {
         manual.setvalues(0.0f, 0.0f, 0.0f); // Reset the orientation
     }
 };
 
 void DS4ImuTester::save_previous_input() {
     // Save the previous state
-    debounce_order.saveState(state.r3 != 0); // Save the state of the right stick button
-    debounce_rezolusion.saveState(state.hat == 0 || state.hat == 4); // Save the state of the circle button
-    debounce_rate_target.saveState(state.hat == 2 || state.hat == 6); // Save the state of the hat switch
+    debounce_order.saveState(state->r3 != 0); // Save the state of the right stick button
+    debounce_rezolusion.saveState(state->hat == 0 || state->hat == 4); // Save the state of the circle button
+    debounce_rate_target.saveState(state->hat == 2 || state->hat == 6); // Save the state of the hat switch
 };
 
 void DS4ImuTester::sensor_calibrate() {
-    calibrater.update(state.gyro_x, state.gyro_y, state.gyro_z, state.accel_x, state.accel_y, state.accel_z);
+    calibrater.update(state->gyro_x, state->gyro_y, state->gyro_z, state->accel_x, state->accel_y, state->accel_z);
     calibrater.calibrate(); // Calibrate the sensor
     Calibrater::SensorState sensor_state = calibrater.get_sensor_state(); // Get the sensor state
     printf(">calibrate_Gyro_x:%f|np\n", sensor_state.gyro_x / gyro_rate);
@@ -64,15 +61,15 @@ void DS4ImuTester::sensor_calibrate() {
     printf(">calibrate_Accel_z:%f|np\n", sensor_state.accel_z / accel_rate);
 
     osc::bundle bundle{osc::time()};
-    bundle << (osc::message{ "/gx/gy/gz/" } << float(state.gyro_x / gyro_rate) << float(state.gyro_y / gyro_rate) << float(state.gyro_z / gyro_rate)) 
-    << (osc::message{ "/ax/ay/az" } << float(state.accel_x / accel_rate) << float(state.accel_y / accel_rate) << float(state.accel_z / accel_rate));
+    bundle << (osc::message{ "/gx/gy/gz/" } << float(state->gyro_x / gyro_rate) << float(state->gyro_y / gyro_rate) << float(state->gyro_z / gyro_rate)) 
+    << (osc::message{ "/ax/ay/az" } << float(state->accel_x / accel_rate) << float(state->accel_y / accel_rate) << float(state->accel_z / accel_rate));
     udp->send_bundle(bundle); // Add the message to the UDP queue
 };
 
 void DS4ImuTester::sensor_freaquency() {
-    if (state.circle != 0 && (state.l2_value != 0 || state.r2_value != 0)) {
+    if (state->circle != 0 && (state->l2_value != 0 || state->r2_value != 0)) {
         // If the circle button is pressed, add the frequency to the Kalman filter
-        add_frequency((-state.l2_value + state.r2_value)/100.0f);
+        add_frequency((-state->l2_value + state->r2_value)/100.0f);
     }
     kalman.begin(this->freq); // Set the sampling frequency for the Kalman filter
     madgwick.begin(this->freq); // Set the sampling frequency for the Madgwick filter
@@ -89,9 +86,9 @@ void DS4ImuTester::add_frequency(float freq) {
 void DS4ImuTester::sensor_rezolution() {
     {
         // Set the target sensor based on the current state
-        if (debounce_rate_target.isValid((state.hat == 2 || state.hat == 6) && state.circle != 0)) { // 現在の状態が前回の状態と異なる場合
+        if (debounce_rate_target.isValid((state->hat == 2 || state->hat == 6) && state->circle != 0)) { // 現在の状態が前回の状態と異なる場合
             if (debounce_rate_target.isNotBounce()) { // 200msのデバウンス
-                rate_target = (state.hat == 2) ? 1 : 0; // ターゲットセンサーを設定
+                rate_target = (state->hat == 2) ? 1 : 0; // ターゲットセンサーを設定
                 debounce_rate_target.pressed(); // 最後に押された時間を更新
             }
         }
@@ -99,9 +96,9 @@ void DS4ImuTester::sensor_rezolution() {
     }
     {
         // Set the sensor resolution based on the current state
-        if (debounce_rezolusion.isValid((state.hat == 0 || state.hat == 4) && state.circle != 0)) { // 現在の状態が前回の状態と異なる場合
+        if (debounce_rezolusion.isValid((state->hat == 0 || state->hat == 4) && state->circle != 0)) { // 現在の状態が前回の状態と異なる場合
             if (debounce_rezolusion.isNotBounce()) { // 200msのデバウンス
-                int direction = (state.hat == 0) ? 1 : -1;
+                int direction = (state->hat == 0) ? 1 : -1;
                 switch (rate_target) {
                     case 0: {
                         int cnt = imu_sensor.get_accel_rate_type_count();
@@ -201,10 +198,10 @@ void DS4ImuTester::raw_update() {
 void DS4ImuTester::manual_update() {
     float magnification = 10.0f; // Magnification factor
 
-    float pad_x = logic::remap(state.l3_x, 0, 255, -1, 1) * magnification; // Normalize the values
-    float pad_y = logic::remap(state.l3_y, 0, 255, -1, 1) * magnification; // Normalize the values
-    float trigger_l = logic::remap(state.l2_value, 0, 255, 0, 1) * magnification; // Normalize the values
-    float trigger_r = logic::remap(state.r2_value, 0, 255, 0, 1) * magnification; // Normalize the values
+    float pad_x = logic::remap(state->l3_x, 0, 255, -1, 1) * magnification; // Normalize the values
+    float pad_y = logic::remap(state->l3_y, 0, 255, -1, 1) * magnification; // Normalize the values
+    float trigger_l = logic::remap(state->l2_value, 0, 255, 0, 1) * magnification; // Normalize the values
+    float trigger_r = logic::remap(state->r2_value, 0, 255, 0, 1) * magnification; // Normalize the values
     float trigger = (-trigger_l + trigger_r) / 2; // Average the trigger values
     if (pad_x != 0 || pad_y != 0 || trigger != 0) {
         EulerAngle operate = {pad_x, pad_y, trigger, manual.order}; // Create an Euler angle object
@@ -229,7 +226,7 @@ void DS4ImuTester::manual_update() {
 };
 
 void DS4ImuTester::set_rotate_order() {
-    if (debounce_order.isValid(state.r3 != 0)) { // Check if the right stick button is pressed
+    if (debounce_order.isValid(state->r3 != 0)) { // Check if the right stick button is pressed
         if (debounce_order.isNotBounce()) { // 200msのデバウンス
             manual.order = static_cast<EulerOrder>((static_cast<int>(manual.order) + 1) % 6); // Change the rotation order
             debounce_order.pressed(); // Update the last press time
