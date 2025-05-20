@@ -40,60 +40,47 @@ class PicowUDP {
             udp_config_({ .target_host = NULL, .target_port = 0 }),
             counter(0),
             is_connected(false),
-            try_wifi_connect_count(0),
-            try_wifi_connect_max(TRY_WIFI_CONNECT_MAX),
+            wifi_connect_try_count(0),
+            wifi_connect_try_max(TRY_WIFI_CONNECT_MAX),
             wifi_connect_timeout_ms(WIFI_CONNECT_TIMEOUT_MS) {
                 memset(&addr, 0, sizeof(addr));
-                memset(&pcb, 0, sizeof(pcb));
+                memset(&sender_pcb, 0, sizeof(sender_pcb));
         }
         ~PicowUDP(){
-            if (pcb) {
-                udp_remove(pcb);
+            if (sender_pcb) {
+                udp_remove(sender_pcb);
             }
-            if (spcb) {
-                udp_remove(spcb);
+            if (receiver_pcb) {
+                udp_remove(receiver_pcb);
             }
         }
         void prototype(); 
         int init_arch();
-        void init_udp();
         void flush_udp();
         void try_wifi_connect();
-        void reset_wifi_connect_count() { try_wifi_connect_count = 0; }
-        void set_wifi_connect_max(const int count) { try_wifi_connect_max = count; }
+        void reset_wifi_connect_try_count() { wifi_connect_try_count = 0; }
+        void set_wifi_connect_try_max(const int count) { wifi_connect_try_max = count; }
         void set_wifi_connect_timeout(const int timeout) { wifi_connect_timeout_ms = timeout; }
-        void set_wifi_config(const wifi_config& config) {
-            wifi_config_ = config;
-        }
-        void set_udp_config(const udp_config& config) {
-            udp_config_ = config;
-        }
-        void apply_msg(osc::bundle& msg) {
-            msg << (osc::message{ "/host" } << int32_t(&pcb->local_ip));
-            msg << (osc::message{ "/port" } << int32_t(pcb->local_port));
-            msg_queue.push(msg.to_packet());
-            send_udp();
-        }
-        void bind_receive_udp() {
-            	spcb = udp_new();
-	            err_t err = udp_bind(spcb, IP_ADDR_ANY, OWN_PORT);
-	            udp_recv (spcb, RcvFromUDP, NULL);
-        }
+        void set_wifi_config(const wifi_config& config) { wifi_config_ = config; }
+        void set_udp_config(const udp_config& config) { udp_config_ = config; }
+        void send_bundle(osc::bundle& msg);
     private:
-        static void RcvFromUDP (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
+        static void receive_msg_fn (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
+        void send_msg_fn();
         std::queue<osc::packet> msg_queue;
         wifi_config wifi_config_;
         udp_config udp_config_;
         int wifi_connect_timeout_ms;
-        int try_wifi_connect_max;
-        int try_wifi_connect_count;
+        int wifi_connect_try_max;
+        int wifi_connect_try_count;
         bool is_connected;
         int counter;
-        struct udp_pcb* pcb;
-        struct udp_pcb* spcb;
+        struct udp_pcb* sender_pcb;
+        struct udp_pcb* receiver_pcb;
         ip_addr_t addr;
-        void wifi_connect();
-        void send_udp();
+        bool wifi_connect();
+        void prepare_udp_sender();
+        void prepare_udp_receiver();
         
 };
 
