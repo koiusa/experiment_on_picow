@@ -1,18 +1,12 @@
 #include "picow_udp.h"
 
-void PicowUDP::send_msg_fn() {
+void PicowUDP::send_msg_fn(const osc::packet msg) {
     if (!is_connected) {
         printf("Not connected to Wi-Fi.\n");
         return;
     }
-    if (msg_queue.empty()) {
-        printf("No messages to send.\n");
-        return;
-    }
 
     // Pop the message from the queue
-    osc::packet msg = msg_queue.front();
-    msg_queue.pop();
     struct pbuf* p = pbuf_alloc(PBUF_TRANSPORT, msg.size(), PBUF_RAM);
     std::memcpy(p->payload, msg.data(), msg.size());
 
@@ -58,8 +52,10 @@ void PicowUDP::flush_udp() {
     }
 
     counter = 0;
-    while (is_connected && !msg_queue.empty()) {
-        send_msg_fn();
+    while (!msg_queue.empty()) {
+        osc::packet msg = msg_queue.front();
+        msg_queue.pop();
+        send_msg_fn(msg);
     }
 };
 
@@ -125,8 +121,7 @@ void PicowUDP::send_bundle(osc::bundle& msg) {
     }
     msg << (osc::message{ "/host" } << int32_t(&sender_pcb->local_ip));
     msg << (osc::message{ "/port" } << int32_t(sender_pcb->local_port));
-    msg_queue.push(msg.to_packet());
-    send_msg_fn();
+    send_msg_fn(msg.to_packet());
 }
 
 void PicowUDP::receive_msg_fn (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port) {
@@ -153,6 +148,10 @@ void PicowUDP::prototype() {
     init_arch();
     if (wifi_connect()){
         prepare_udp_sender();
+        
+        osc::bundle bundle{osc::time()};
+        bundle << (osc::message{ "/prototype" } << "test");
+        msg_queue.push(bundle.to_packet());
         flush_udp();
     }
     cyw43_arch_deinit();

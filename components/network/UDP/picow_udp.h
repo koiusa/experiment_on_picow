@@ -74,7 +74,7 @@ class PicowUDP {
 
     private:
         static void receive_msg_fn (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
-        void send_msg_fn();
+        void send_msg_fn(const osc::packet msg);
         std::queue<osc::packet> msg_queue;
         wifi_config wifi_config_;
         udp_config udp_config_;
