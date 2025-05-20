@@ -25,7 +25,11 @@ int main()
     
     DS4ImuTester ds4_imu_tester;
     ServoDriveTester servo_drive_tester;  
-
+    PicowUDP udp;
+    udp.set_wifi_config({ WIFI_SSID, WIFI_PASSWORD });
+    udp.set_udp_config({ UDP_TARGET, UDP_PORT });
+    udp.bind_listener(&ds4_imu_tester);
+    udp.bind_listener(&servo_drive_tester);
     
     while (1) {
         loop_contents = false;
@@ -48,7 +52,7 @@ int main()
         printf("%s [LOOP]\n", LOG_HEADER);
         while (loop_contents) {
             tight_loop_contents();
-            ds4_imu_tester.wifi_connect(); // Try to connect to Wi-Fi
+            udp.try_wifi_connect(); // Try to connect to Wi-Fi
             state = controller.get_state();
 
             if (true == state.linked) {

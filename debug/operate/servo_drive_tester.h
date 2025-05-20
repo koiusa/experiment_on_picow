@@ -6,8 +6,9 @@
 #include "pico/stdlib.h"
 #include "ds4_on_pico_w.hpp"
 #include "sg90.h"
+#include "picow_udp.h"
 
-class ServoDriveTester
+class ServoDriveTester : public PicowUDP::IUdpListener
 {
     public:
         ServoDriveTester() {

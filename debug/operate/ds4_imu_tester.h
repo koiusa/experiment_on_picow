@@ -13,7 +13,9 @@
 #include <chrono>
 #include <algorithm>
 
-class DS4ImuTester {
+#include "picow_udp.h"
+
+class DS4ImuTester : public PicowUDP::IUdpListener {
     // デバウンス処理のためのクラス
     // ボタンの状態を保存し、一定時間が経過した後に有効な状態かどうかを判断する
     class debounce {
@@ -41,7 +43,6 @@ class DS4ImuTester {
 
     private:
         DualShock4_state state = {0};
-        PicowUDP udp; // UDP通信のインスタンス
         Calibrater calibrater;
         float gyro_rate; // Get the gyro resolution
         float accel_rate; // Get the accel resolution
@@ -67,9 +68,7 @@ class DS4ImuTester {
 
         void update();
         void set_State(const DualShock4_state& state);
-        PicowUDP get_udp(){ return udp;};
         void reset();
-        void wifi_connect() { udp.try_wifi_connect(); } // Wi-Fi接続を試みる;
     private:
         void kalman_update();
         void madgwick_update();

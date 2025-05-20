@@ -27,6 +27,20 @@
 class PicowUDP {
     // Initialization of counter moved to the constructor
     public:
+        class IUdpListener
+        {   
+            public:
+                void Bind(PicowUDP* udp) { this->udp = udp; };
+                void send_bundle(osc::bundle& msg) {
+                    if (udp) {
+                        udp->send_bundle(msg);
+                    } else {
+                        printf("Not bind udp.\n");
+                    }
+                }
+            private:
+                PicowUDP* udp = 0;
+        };
         struct wifi_config {
             const char* ssid;
             const char* password;
@@ -64,6 +78,7 @@ class PicowUDP {
         void set_wifi_config(const wifi_config& config) { wifi_config_ = config; }
         void set_udp_config(const udp_config& config) { udp_config_ = config; }
         void send_bundle(osc::bundle& msg);
+        void bind_listener(IUdpListener* listener) { listener->Bind(this); }
     private:
         static void receive_msg_fn (void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
         void send_msg_fn();

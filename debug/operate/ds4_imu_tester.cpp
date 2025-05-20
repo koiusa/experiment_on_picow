@@ -2,8 +2,6 @@
 
 
 DS4ImuTester::DS4ImuTester() {
-    udp.set_wifi_config({ WIFI_SSID, WIFI_PASSWORD });
-    udp.set_udp_config({ UDP_TARGET, UDP_PORT });
     calibrater.init(); // Initialize the calibrater
     kalman.init(); // Initialize the Kalman filter
     kalman.begin(this->freq); // Initialize the Kalman filter with the default frequency
@@ -68,7 +66,7 @@ void DS4ImuTester::sensor_calibrate() {
     osc::bundle bundle{osc::time()};
     bundle << (osc::message{ "/gx/gy/gz/" } << float(state.gyro_x / gyro_rate) << float(state.gyro_y / gyro_rate) << float(state.gyro_z / gyro_rate)) 
     << (osc::message{ "/ax/ay/az" } << float(state.accel_x / accel_rate) << float(state.accel_y / accel_rate) << float(state.accel_z / accel_rate));
-    udp.send_bundle(bundle); // Add the message to the UDP queue
+    send_bundle(bundle); // Add the message to the UDP queue
 };
 
 void DS4ImuTester::sensor_freaquency() {
@@ -153,7 +151,7 @@ void DS4ImuTester::kalman_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/kalman" } << float(pitch) << float(roll) << float(yaw));
-    udp.send_bundle(vecter);
+    send_bundle(vecter);
 };
 
 /// @brief Dummyinput::madgwick_update
@@ -179,7 +177,7 @@ void DS4ImuTester::madgwick_update() {
     
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/madgwick" } << float(pitch) << float(roll) << float(yaw));
-    udp.send_bundle(vecter);
+    send_bundle(vecter);
 };
 
 void DS4ImuTester::raw_update() {
@@ -195,7 +193,7 @@ void DS4ImuTester::raw_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/raw" } << float(yrp.x) << float(yrp.y) << float(yrp.z));
-    udp.send_bundle(vecter);
+    send_bundle(vecter);
 };
 
 /// @brief Dummyinput::manual_update
@@ -227,7 +225,7 @@ void DS4ImuTester::manual_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/manual" } << float(this->manual.x) << float(this->manual.y) << float(this->manual.z));
-    udp.send_bundle(vecter);
+    send_bundle(vecter);
 };
 
 void DS4ImuTester::set_rotate_order() {

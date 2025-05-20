@@ -14,4 +14,9 @@ void ServoDriveTester::update()
         servo.apply_angle(false);
     }
     printf("%s [R3] %f\n", "SERVO" , servo.get_current_angle());
+    
+    osc::bundle angle{osc::time()};
+    angle << (osc::message{ "/servo" } << float(servo.get_current_angle()));
+    send_bundle(angle);
+
 };
