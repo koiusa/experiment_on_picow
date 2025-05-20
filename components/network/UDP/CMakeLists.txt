@@ -4,6 +4,7 @@ add_library(lib_picow_udp STATIC
 
 target_include_directories(lib_picow_udp PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/..
 )
 target_include_directories(lib_picow_udp PRIVATE
     ${PICO_SDK_PATH}/lib/lwip/src/include # lwIPのインクルードパスを追加
