@@ -66,7 +66,7 @@ void DS4ImuTester::sensor_calibrate() {
     osc::bundle bundle{osc::time()};
     bundle << (osc::message{ "/gx/gy/gz/" } << float(state.gyro_x / gyro_rate) << float(state.gyro_y / gyro_rate) << float(state.gyro_z / gyro_rate)) 
     << (osc::message{ "/ax/ay/az" } << float(state.accel_x / accel_rate) << float(state.accel_y / accel_rate) << float(state.accel_z / accel_rate));
-    send_bundle(bundle); // Add the message to the UDP queue
+    udp->send_bundle(bundle); // Add the message to the UDP queue
 };
 
 void DS4ImuTester::sensor_freaquency() {
@@ -151,7 +151,7 @@ void DS4ImuTester::kalman_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/kalman" } << float(pitch) << float(roll) << float(yaw));
-    send_bundle(vecter);
+    udp->send_bundle(vecter);
 };
 
 /// @brief Dummyinput::madgwick_update
@@ -177,7 +177,7 @@ void DS4ImuTester::madgwick_update() {
     
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/madgwick" } << float(pitch) << float(roll) << float(yaw));
-    send_bundle(vecter);
+    udp->send_bundle(vecter);
 };
 
 void DS4ImuTester::raw_update() {
@@ -193,7 +193,7 @@ void DS4ImuTester::raw_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/raw" } << float(yrp.x) << float(yrp.y) << float(yrp.z));
-    send_bundle(vecter);
+    udp->send_bundle(vecter);
 };
 
 /// @brief Dummyinput::manual_update
@@ -225,7 +225,7 @@ void DS4ImuTester::manual_update() {
 
     osc::bundle vecter{osc::time()};
     vecter << (osc::message{ "/manual" } << float(this->manual.x) << float(this->manual.y) << float(this->manual.z));
-    send_bundle(vecter);
+    udp->send_bundle(vecter);
 };
 
 void DS4ImuTester::set_rotate_order() {

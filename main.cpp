@@ -28,8 +28,8 @@ int main()
     PicowUDP udp;
     udp.set_wifi_config({ WIFI_SSID, WIFI_PASSWORD });
     udp.set_udp_config({ UDP_TARGET, UDP_PORT });
-    udp.bind_listener(&ds4_imu_tester);
-    udp.bind_listener(&servo_drive_tester);
+    ds4_imu_tester.attach(&udp);
+    servo_drive_tester.attach(&udp);
     
     while (1) {
         loop_contents = false;

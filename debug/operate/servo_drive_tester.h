@@ -16,8 +16,9 @@ class ServoDriveTester : public PicowUDP::IUdpListener
         }
         ~ServoDriveTester() = default;
 
-        void set_State(const DualShock4_state& state) { this->state = state; }
+        void set_State(const DualShock4_state& state) { this->state = state; };
         void update();
+        void attach(PicowUDP* udp) override { this->udp = udp; };
     private:
         DualShock4_state state = {0};
         sg90 servo; 

@@ -69,6 +69,7 @@ class DS4ImuTester : public PicowUDP::IUdpListener {
         void update();
         void set_State(const DualShock4_state& state);
         void reset();
+        void attach(PicowUDP* udp) override { this->udp = udp; };
     private:
         void kalman_update();
         void madgwick_update();

@@ -17,6 +17,6 @@ void ServoDriveTester::update()
     
     osc::bundle angle{osc::time()};
     angle << (osc::message{ "/servo" } << float(servo.get_current_angle()));
-    send_bundle(angle);
+    udp->send_bundle(angle);
 
 };
