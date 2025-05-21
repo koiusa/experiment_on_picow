@@ -68,7 +68,7 @@ void PicowUDP::try_wifi_connect() {
         printf("Failed to connect to Wi-Fi.\n");
         return;
     }
-    while (!is_connected ) {
+    while (!is_connected && wifi_connect_try_count <= wifi_connect_try_max) {
         wifi_connect_try_count++;
         printf("Attempting to connect... %d\n", wifi_connect_try_count);
         if (wifi_connect()){
