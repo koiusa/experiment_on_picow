@@ -46,3 +46,9 @@ add_subdirectory(operate)
 target_link_libraries(components_on_picow
     lib_operate
 )
+
+# Eigenライブラリを追加
+add_subdirectory(math/eigen)
+target_link_libraries (components_on_picow
+    eigen
+)
