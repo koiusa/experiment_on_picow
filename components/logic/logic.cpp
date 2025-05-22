@@ -1,6 +1,3 @@
-#ifndef LOGIC_HPP
-#define LOGIC_HPP
-
 #include "logic.h"
 
 namespace logic {
@@ -8,5 +5,3 @@ namespace logic {
     float remap(float value, float istart, float istop, float ostart, float ostop) { return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));}
 
 }
-
-#endif // LOGIC_HPP
