@@ -1,5 +1,9 @@
 # RaspberryPi Pico 実験用プロジェクト
 
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/koiusa/experiment_on_picow)](https://github.com/koiusa/experiment_on_picow/graphs/commit-activity)
+[![GitHub issues](https://img.shields.io/github/issues/koiusa/experiment_on_picow)](https://github.com/koiusa/experiment_on_picow/issues)
+[![GitHub license](https://img.shields.io/github/license/koiusa/experiment_on_picow)](https://github.com/koiusa/experiment_on_picow/blob/main/LICENSE)
+
 ## Dualshock4コントローラ入力
 - ボタン入力確認
 - モーションセンサー姿勢計算（仮））
@@ -23,7 +27,6 @@
 
 # ビルド環境
 
-## Visual Studio Code
+- Visual Studio Code
 
-C++
-[raspberry-pi-pico](https://marketplace.visualstudio.com/items?itemName=raspberry-pi.raspberry-pi-pico)
+- C++ [raspberry-pi-pico](https://marketplace.visualstudio.com/items?itemName=raspberry-pi.raspberry-pi-pico)
